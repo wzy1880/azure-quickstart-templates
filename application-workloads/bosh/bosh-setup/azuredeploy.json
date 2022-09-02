@@ -105,6 +105,18 @@
         "description": "Access key of the storage account"
       }
     },
+	"storageAccountName": {
+      "type": "string",
+      "metadata": {
+        "description": "Access key of the storage account"
+      }
+    },
+	"blobEndpoint": {
+      "type": "string",
+      "metadata": {
+        "description": "Access key of the storage account"
+      }
+    },
     "certificate": {
       "type": "securestring",
       "defaultValue": "",
@@ -556,23 +568,6 @@
       }
     },
     {
-      "name": "create-storage-account",
-      "type": "Microsoft.Resources/deployments",
-      "apiVersion": "2020-10-01",
-      "properties": {
-        "mode": "Incremental",
-        "templateLink": {
-          "uri": "[uri(variables('baseUriAzureCloud'), concat(variables('storageAccountTemplate'), parameters('_artifactsLocationSasToken')))]",
-          "contentVersion": "1.0.0.0"
-        },
-        "parameters": {
-          "location": {
-            "value": "[parameters('location')]"
-          }
-        }
-      }
-    },
-    {
       "apiVersion": "2020-11-01",
       "type": "Microsoft.Network/publicIPAddresses",
       "name": "[concat(parameters('vmName'), '-devbox')]",
@@ -670,7 +665,6 @@
       "type": "Microsoft.Resources/deployments",
       "apiVersion": "2020-10-01",
       "dependsOn": [
-        "Microsoft.Resources/deployments/create-storage-account",
         "Microsoft.Resources/deployments/create-load-balancer"
       ],
       "properties": {
@@ -694,7 +688,7 @@
               "NSG_NAME_FOR_CLOUD_FOUNDRY": "[variables('cfNetworkSecurityGroup')]",
               "SUBSCRIPTION_ID": "[subscription().subscriptionId]",
               "RESOURCE_GROUP_NAME": "[resourceGroup().name]",
-              "DEFAULT_STORAGE_ACCOUNT_NAME": "[reference('Microsoft.Resources/deployments/create-storage-account').outputs.storageAccountName.value]",
+              "DEFAULT_STORAGE_ACCOUNT_NAME": "[parameters('storageAccountName')]",
               "DEFAULT_STORAGE_ACCESS_KEY": "[parameters('storageAccountKey')]",
               "ADMIN_USER_NAME": "[parameters('adminUsername')]",
               "ENVIRONMENT": "[parameters('environment')]",
@@ -759,7 +753,7 @@
           "osDisk": {
             "name": "osdisk",
             "vhd": {
-              "uri": "[concat(reference('Microsoft.Resources/deployments/create-storage-account').outputs.blobEndpoint.value, variables('vmStorageAccountContainerName'), '/', parameters('vmName'), '-osdisk.vhd')]"
+              "uri": "[concat(parameters('blobEndpoint'), variables('vmStorageAccountContainerName'), '/', parameters('vmName'), '-osdisk.vhd')]"
             },
             "caching": "ReadWrite",
             "createOption": "FromImage"
@@ -797,4 +791,3 @@
     }
   }
 }
-
